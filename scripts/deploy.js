@@ -4,7 +4,7 @@ async function main() {
     
     // Start deployment, returning a promise that resolves to a contract object
     const token = await Token.deploy();
-    const masterChef = await MasterChef.deploy();
+    const masterChef = await MasterChef.deploy(token.address, 0);
 
     console.log("Token deployed to address:", token.address);
     console.log("MasterChef deployed to address:", masterChef.address);

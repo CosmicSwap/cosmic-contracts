@@ -6,14 +6,16 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./libs/IBEP20.sol";
 
-contract COSMICPresale is ReentrancyGuard {
+contract Presale is ReentrancyGuard {
   using SafeMath for uint256;
   // Maps user to the number of tokens owned
-  mapping (address => uint256) tokensOwned;
+  mapping (address => uint256) public tokensOwned;
   // The block when the user claimed tokens prevously
-  mapping (address => uint256) lastTokensClaimed;
+  mapping (address => uint256) public lastTokensClaimed;
   // The number of times the user has claimed tokens;
-  mapping (address => uint256) tokensUnclaimed;
+  mapping (address => uint256) public numClaims;
+  // The number of unclaimed tokens the user has
+  mapping (address => uint256) public tokensUnclaimed;
 
   // Cosmic token
   IBEP20 cosmic;
@@ -22,7 +24,7 @@ contract COSMICPresale is ReentrancyGuard {
   // Starting timestamp normal
   uint256 startingTimeStamp;
   uint256 totalTokensSold = 0;
-  uint256 tokensPerBNB = 83;
+  uint256 tokensPerBNB = 50;
   uint256 bnbReceived = 0;
   
   address payable owner;
@@ -55,8 +57,9 @@ contract COSMICPresale is ReentrancyGuard {
     uint256 tokens = _bnbSent.mul(tokensPerBNB);
     
     
-    require (_bnbSent >= 0.5 ether, "BNB is lesser than min value");
-    require (_bnbSent <= 10 ether, "BNB is greater than max value");
+    require (_bnbSent >= 0.2 ether, "BNB is lesser than min value");
+    require (_bnbSent <= 7 ether, "BNB is greater than max value");
+    require (bnbReceived <= 1200 ether, "Hardcap reached");
     require(block.timestamp >= startingTimeStamp, "Presale has not started");
     
     tokensOwned[_buyer] = tokensOwned[_buyer].add(tokens);
@@ -86,16 +89,22 @@ contract COSMICPresale is ReentrancyGuard {
     return cosmic.balanceOf(address(this));
   }
   
+  function getNumClaims () external view returns (uint256) {
+      return numClaims[msg.sender];
+  }
+  
   function claimTokens () external {
     require (isSaleActive == false, "Sale is still active");
     require (tokensOwned[msg.sender] > 0, "User should own some cosmic tokens");
     require (tokensUnclaimed[msg.sender] > 0, "User should have unclaimed cosmic tokens");
     require (cosmic.balanceOf(address(this)) >= tokensOwned[msg.sender], "There are not enough cosmic tokens to transfer");
     require (block.number.sub(lastTokensClaimed[msg.sender]) >= 28800, "Hasn't been 28,800 blocks since last claim"); 
+    require (numClaims[msg.sender] < 5, "Only 5 claims can be made to the smart contract");
 
     tokensUnclaimed[msg.sender] = tokensUnclaimed[msg.sender].sub(tokensOwned[msg.sender].div(5));
     lastTokensClaimed[msg.sender] = block.number;
-
+    numClaims[msg.sender] = numClaims[msg.sender].add(1);
+    
     cosmic.transfer(msg.sender, tokensOwned[msg.sender].div(5));
     emit TokenClaim(msg.sender, tokensOwned[msg.sender].div(5));
   }
