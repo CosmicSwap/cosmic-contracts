@@ -52,8 +52,6 @@ contract COSMICPresale is ReentrancyGuard {
     
     require (_bnbSent >= 0.5 ether, "BNB is lesser than min value");
     require (_bnbSent <= 10 ether, "BNB is greater than max value");
-    require (bnbReceived < 750 ether, "Hardcap reached");
-    require (msg.value.add(bnbReceived) <= 750 ether, "Purchase would exceed hardcap");
     require(block.timestamp >= startingTimeStamp, "Presale has not started");
     
     tokensOwned[_buyer] = tokensOwned[_buyer].add(tokens);
