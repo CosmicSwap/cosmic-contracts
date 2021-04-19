@@ -10,6 +10,11 @@ contract COSMICPresale is ReentrancyGuard {
   using SafeMath for uint256;
   // Maps user to the number of tokens owned
   mapping (address => uint256) tokensOwned;
+  // The block when the user claimed tokens prevously
+  mapping (address => uint256) lastTokensClaimed;
+  // The number of times the user has claimed tokens;
+  mapping (address => uint256) tokensUnclaimed;
+
   // Cosmic token
   IBEP20 cosmic;
   // Sale ended
@@ -55,6 +60,7 @@ contract COSMICPresale is ReentrancyGuard {
     require(block.timestamp >= startingTimeStamp, "Presale has not started");
     
     tokensOwned[_buyer] = tokensOwned[_buyer].add(tokens);
+    tokensUnclaimed[_buyer] = tokensUnclaimed[_buyer].add(tokens);
     totalTokensSold = totalTokensSold.add(tokens);
     bnbReceived = bnbReceived.add(msg.value);
     emit TokenBuy(beneficiary, tokens);
@@ -68,6 +74,14 @@ contract COSMICPresale is ReentrancyGuard {
     return tokensOwned[msg.sender];
   }
 
+  function getTokensUnclaimed () external view returns (uint256) {
+    return tokensUnclaimed[msg.sender];
+  }
+
+  function getLastTokensClaimed () external view returns (uint256) {
+    return lastTokensClaimed[msg.sender];
+  }
+
   function getCosmicTokensLeft () external view returns (uint256) {
     return cosmic.balanceOf(address(this));
   }
@@ -75,11 +89,15 @@ contract COSMICPresale is ReentrancyGuard {
   function claimTokens () external {
     require (isSaleActive == false, "Sale is still active");
     require (tokensOwned[msg.sender] > 0, "User should own some cosmic tokens");
+    require (tokensUnclaimed[msg.sender] > 0, "User should have unclaimed cosmic tokens");
     require (cosmic.balanceOf(address(this)) >= tokensOwned[msg.sender], "There are not enough cosmic tokens to transfer");
+    require (block.number.sub(lastTokensClaimed[msg.sender]) >= 28800, "Hasn't been 28,800 blocks since last claim"); 
 
-    cosmic.transfer(msg.sender, tokensOwned[msg.sender]);
-    emit TokenClaim(msg.sender, tokensOwned[msg.sender]);
-    tokensOwned[msg.sender] = 0;
+    tokensUnclaimed[msg.sender] = tokensUnclaimed[msg.sender].sub(tokensOwned[msg.sender].div(5));
+    lastTokensClaimed[msg.sender] = block.number;
+
+    cosmic.transfer(msg.sender, tokensOwned[msg.sender].div(5));
+    emit TokenClaim(msg.sender, tokensOwned[msg.sender].div(5));
   }
 
   function withdrawFunds () external onlyOwner {
