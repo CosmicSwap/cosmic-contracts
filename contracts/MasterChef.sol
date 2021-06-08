@@ -200,10 +200,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
         if (_amount > 0) {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-            if (address(pool.lpToken) == address(cosmic)) {
-                uint256 transferTax = _amount.mul(2).div(100);
-                _amount = _amount.sub(transferTax);
-            }
+            // if (address(pool.lpToken) == address(cosmic)) {
+            //     uint256 transferTax = _amount.mul(2).div(100);
+            //     _amount = _amount.sub(transferTax);
+            // }
             if (pool.depositFeeBP > 0) {
                 uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
                 pool.lpToken.safeTransfer(feeAddress, depositFee);

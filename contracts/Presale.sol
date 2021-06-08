@@ -24,8 +24,8 @@ contract Presale is ReentrancyGuard {
   // Starting timestamp normal
   uint256 startingTimeStamp;
   uint256 totalTokensSold = 0;
-  uint256 tokensPerBNB = 50;
-  uint256 bnbReceived = 0;
+  uint256 tokensPerMATIC = 24; //24/100
+  uint256 maticReceived = 0;
   
   address payable owner;
   
@@ -53,19 +53,19 @@ contract Presale is ReentrancyGuard {
     require(isSaleActive, "Sale is not active yet");
       
     address _buyer = beneficiary;
-    uint256 _bnbSent = msg.value;
-    uint256 tokens = _bnbSent.mul(tokensPerBNB);
+    uint256 _maticSent = msg.value;
+    uint256 tokens = _maticSent.mul(tokensPerMATIC).div(100);
     
     
-    require (_bnbSent >= 0.2 ether, "BNB is lesser than min value");
-    require (_bnbSent <= 7 ether, "BNB is greater than max value");
-    require (bnbReceived <= 1200 ether, "Hardcap reached");
+    require (_maticSent >= 60 ether, "MATIC is lesser than min value");
+    require (_maticSent <= 2200 ether, "MATIC is greater than max value");
+    require (maticReceived <= 250000 ether, "Hardcap reached");
     require(block.timestamp >= startingTimeStamp, "Presale has not started");
     
     tokensOwned[_buyer] = tokensOwned[_buyer].add(tokens);
     tokensUnclaimed[_buyer] = tokensUnclaimed[_buyer].add(tokens);
     totalTokensSold = totalTokensSold.add(tokens);
-    bnbReceived = bnbReceived.add(msg.value);
+    maticReceived = maticReceived.add(msg.value);
     emit TokenBuy(beneficiary, tokens);
   }
   
@@ -99,14 +99,14 @@ contract Presale is ReentrancyGuard {
     require (tokensUnclaimed[msg.sender] > 0, "User should have unclaimed cosmic tokens");
     require (cosmic.balanceOf(address(this)) >= tokensOwned[msg.sender], "There are not enough cosmic tokens to transfer");
     require (block.number.sub(lastTokensClaimed[msg.sender]) >= 28800, "Hasn't been 28,800 blocks since last claim"); 
-    require (numClaims[msg.sender] < 5, "Only 5 claims can be made to the smart contract");
+    require (numClaims[msg.sender] < 10, "Only 10 claims can be made to the smart contract");
 
-    tokensUnclaimed[msg.sender] = tokensUnclaimed[msg.sender].sub(tokensOwned[msg.sender].div(5));
+    tokensUnclaimed[msg.sender] = tokensUnclaimed[msg.sender].sub(tokensOwned[msg.sender].div(10));
     lastTokensClaimed[msg.sender] = block.number;
     numClaims[msg.sender] = numClaims[msg.sender].add(1);
     
-    cosmic.transfer(msg.sender, tokensOwned[msg.sender].div(5));
-    emit TokenClaim(msg.sender, tokensOwned[msg.sender].div(5));
+    cosmic.transfer(msg.sender, tokensOwned[msg.sender].div(10));
+    emit TokenClaim(msg.sender, tokensOwned[msg.sender].div(10));
   }
 
   function withdrawFunds () external onlyOwner {

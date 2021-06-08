@@ -2,8 +2,8 @@
 
 pragma solidity 0.6.12;
 
-import "./libs/IBEP20.sol";
 import "./libs/SafeBEP20.sol";
+import "./libs/IBEP20.sol";
 import "./libs/ICosmicReferral.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
