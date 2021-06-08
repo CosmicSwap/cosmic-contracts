@@ -5,7 +5,7 @@ pragma solidity 0.6.12;
 import "./libs/BEP20.sol";
 
 // CosmicToken with Governance.
-contract CosmicToken is BEP20("Cosmic Finance Token", "COSMIC") {
+contract CosmicToken is BEP20("CosmicSwap", "COSMIC") {
     // Burn address
     address public constant BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
 
