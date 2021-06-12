@@ -481,7 +481,7 @@ contract Presale is ReentrancyGuard {
     require (tokensOwned[msg.sender] > 0, "User should own some cosmic tokens");
     require (tokensUnclaimed[msg.sender] > 0, "User should have unclaimed cosmic tokens");
     require (cosmic.balanceOf(address(this)) >= tokensOwned[msg.sender], "There are not enough cosmic tokens to transfer");
-    require (block.number.sub(lastTokensClaimed[msg.sender]) >= 28800, "Hasn't been 28,800 blocks since last claim"); 
+    require (block.number.sub(lastTokensClaimed[msg.sender]) >= 41143, "It has not been 41,143 blocks since last claim"); 
     require (numClaims[msg.sender] < 10, "Only 10 claims can be made to the smart contract");
 
     tokensUnclaimed[msg.sender] = tokensUnclaimed[msg.sender].sub(tokensOwned[msg.sender].div(10));
